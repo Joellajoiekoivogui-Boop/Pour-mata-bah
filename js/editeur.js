@@ -28,8 +28,7 @@
     formule: $('f-formule'),
     musiqueFichier: $('f-musique-fichier'),
     photosTitre: $('f-photos-titre'),
-    auto: $('f-auto'),
-    diaporama: $('f-diaporama')
+    auto: $('f-auto')
   };
 
   var couleur = base.couleur;
@@ -60,16 +59,11 @@
     champs.formule.value = c.lettre.formule;
     champs.photosTitre.value = c.photos.titre;
     champs.auto.checked = c.options.avancementAuto;
-    champs.diaporama.checked = c.options.diaporama;
     champs.musiqueFichier.value = c.musique.fichier;
     var mode = !c.musique.activee ? 'aucune' : (c.musique.fichier ? 'fichier' : 'boite');
     document.querySelector('input[name="musique"][value="' + mode + '"]').checked = true;
     couleur = c.couleur;
-    photos = c.photos.liste.map(function (p) {
-      var copie = { image: p.image, legende: p.legende };
-      if (p.cadrage) copie.cadrage = p.cadrage;   // gardé tel quel (réglé dans config.js)
-      return copie;
-    });
+    photos = c.photos.liste.map(function (p) { return { image: p.image, legende: p.legende }; });
     dessinerPhotos();
     dessinerNuancier();
     majMusique();
@@ -98,7 +92,7 @@
       },
       couleur: couleur,
       musique: { activee: mode !== 'aucune', fichier: mode === 'fichier' ? champs.musiqueFichier.value : '' },
-      options: { avancementAuto: champs.auto.checked, diaporama: champs.diaporama.checked }
+      options: { avancementAuto: champs.auto.checked }
     };
   }
 
@@ -407,7 +401,7 @@
       '  photos: {',
       '    titre: ' + js(c.photos.titre) + ',',
       '    liste: ' + listeJs(c.photos.liste.map(function (p) {
-        return '{ image: ' + js(p.image) + ', legende: ' + js(p.legende) + (p.cadrage ? ', cadrage: ' + js(p.cadrage) : '') + ' }';
+        return '{ image: ' + js(p.image) + ', legende: ' + js(p.legende) + ' }';
       }), '    ') + ',',
       '  },',
       '',
@@ -427,7 +421,6 @@
       '    avancementAuto: ' + c.options.avancementAuto + ',',
       '    vibration: ' + c.options.vibration + ',',
       '    personnalisationParLien: ' + c.options.personnalisationParLien + ',',
-      '    diaporama: ' + c.options.diaporama + ',',
       '  },',
       '};',
       ''
@@ -488,7 +481,7 @@
   $('formulaire').addEventListener('input', changement);
   $('formulaire').addEventListener('change', function (e) {
     if (e.target.name === 'musique') { majMusique(); changement(); }
-    if (e.target === champs.auto || e.target === champs.diaporama) changement();
+    if (e.target === champs.auto) changement();
   });
   $('formulaire').addEventListener('submit', function (e) { e.preventDefault(); });
 

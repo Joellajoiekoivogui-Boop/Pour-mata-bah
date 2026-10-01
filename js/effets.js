@@ -184,7 +184,6 @@
   var traine = { x: 0, y: 0, dernier: 0 };
   var parallaxe = { x: 0.5, y: 0.5, lx: 0.5, ly: 0.5 };
   var magieSale = false, rafId = 0, enCours = false, dernier = 0, temps = 0;
-  var cielCouvert = false;     // une photo couvre tout l'écran : ciel en pause
   var mesures = [], mesureFaite = false;
   var minuterieTaille = 0;
   var surLeger = null;
@@ -527,21 +526,6 @@
     eveiller();
   }
 
-  // Quelques paillettes lentes (contour lumineux des photos).
-  function poussiere(x, y, n) {
-    if (!pret || reduit) return;
-    for (var i = 0; i < (n || 1); i++) {
-      var etincelle = Math.random() < 0.55;
-      particule(etincelle ? 3 : 2, x + hasard(-3, 3), y + hasard(-3, 3), {
-        vx: hasard(-28, 28), vy: hasard(-40, 12), g: 36, frein: 0.3,
-        taille: etincelle ? hasard(7, 15) : hasard(5, 11), vie: hasard(0.5, 1.1),
-        rot: hasard(0, PI2), vr: hasard(-2, 2),
-        img: etincelle ? choisir(sprites.etincelles) : sprites.lueurs[0]
-      });
-    }
-    eveiller();
-  }
-
   function pluieDeCoeurs(duree, densite) {
     if (!pret) return;
     pluieRestante = duree;
@@ -757,7 +741,7 @@
     mesurer(dt);
     dt = Math.min(dt, 0.05);
     temps += dt;
-    if (!cielCouvert) dessinerCiel(dt);
+    dessinerCiel(dt);
     dessinerMagie(dt);
   }
 
@@ -820,8 +804,6 @@
     petitEclat: petitEclat,
     etincelles: etincelles,
     pluieDeCoeurs: pluieDeCoeurs,
-    poussiere: poussiere,
-    couvrir: function (oui) { cielCouvert = !!oui; },
     plume: plumer,
     trainee: trainee,
     viser: viser,

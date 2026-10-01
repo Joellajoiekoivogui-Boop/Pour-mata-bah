@@ -704,241 +704,7 @@ button {
 
 .attend-toucher .indice-suite { animation: apparition 1s ease both, respiration 2.8s ease-in-out 1s infinite; }
 
-/* ---------- 5. Le film des photos ----------------------------------------- */
-
-.film-toile {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  pointer-events: none;
-}
-
-/* Assombrit le bas (légende lisible) et le haut (bouton son) de la photo. */
-.film-ombre {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(0deg, rgba(var(--fond-1-rgb), .9) 0%, rgba(var(--fond-1-rgb), .55) 16%, rgba(var(--fond-1-rgb), 0) 38%),
-    linear-gradient(180deg, rgba(var(--fond-1-rgb), .5) 0%, rgba(var(--fond-1-rgb), 0) 15%),
-    radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 58%, rgba(0, 0, 0, .36) 100%);
-  opacity: 0;
-  transition: opacity .9s ease;
-}
-
-.scene-film.plein.photo-pleine .film-ombre { opacity: 1; }
-
-.film-titre {
-  position: absolute;
-  left: 0; right: 0;
-  top: 50%;
-  max-width: 34rem;
-  margin: 0 auto;
-  padding: 0 26px;
-  font-style: italic;
-  font-weight: 500;
-  font-size: 2rem;
-  font-size: clamp(1.85rem, 7.6vw, 3.4rem);
-  line-height: 1.25;
-  text-shadow: 0 0 26px rgba(var(--principale-rgb), .6), 0 2px 12px rgba(0, 0, 0, .4);
-  pointer-events: none;
-  transform: translate3d(0, -50%, 0);
-  transition: opacity .9s ease, filter .9s ease, transform 1s var(--doux);
-}
-
-.film-titre.sort { opacity: 0; filter: blur(8px); transform: translate3d(0, -50%, 0) scale(1.08); }
-
-.film-legende {
-  position: absolute;
-  left: 0; right: 0;
-  bottom: 58px;
-  bottom: calc(58px + env(safe-area-inset-bottom));
-  max-width: 32rem;
-  margin: 0 auto;
-  padding: 0 22px;
-  font-family: var(--script);
-  font-weight: 400;
-  font-size: 2.35rem;
-  font-size: clamp(2.15rem, 9.4vw, 3.6rem);
-  line-height: 1.14;
-  color: #fff;
-  text-wrap: balance;
-  text-shadow: 0 0 18px rgba(var(--principale-rgb), .95), 0 0 44px rgba(var(--principale-rgb), .55), 0 2px 8px rgba(0, 0, 0, .6);
-  pointer-events: none;
-  transition: opacity .6s ease, filter .6s ease;
-}
-
-.film-legende.sort { opacity: 0; filter: blur(6px); }
-.film-legende .coeur-inline { width: .55em; height: .5em; margin-left: .04em; vertical-align: -.02em; }
-
-/* Barres de progression, comme les statuts */
-.film-barres {
-  position: absolute;
-  left: 0; right: 0;
-  bottom: 30px;
-  bottom: calc(30px + env(safe-area-inset-bottom));
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: flex;
-  -webkit-justify-content: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .6s ease;
-}
-
-.film-barres.visible { opacity: 1; }
-
-.film-barre {
-  position: relative;
-  display: block;
-  width: 26px;
-  height: 3px;
-  margin: 0 3px;
-  overflow: hidden;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, .28);
-}
-
-.film-barre i {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: #fff;
-  transform-origin: 0 50%;
-  transform: scaleX(0);
-}
-
-/* La constellation : les photos en perles sur un cœur de lumière */
-.film-fin {
-  position: relative;
-  z-index: 1;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: flex;
-  -webkit-flex-direction: column;
-  flex-direction: column;
-  -webkit-align-items: center;
-  align-items: center;
-  width: 100%;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 1s ease, visibility 0s linear 1s;
-}
-
-.film-fin.visible { opacity: 1; visibility: visible; transition: opacity 1s ease, visibility 0s; }
-
-.constellation {
-  position: relative;
-  width: 86vw;
-  max-width: 420px;
-  margin-top: 4%;
-}
-
-@supports (width: min(1px, 2px)) {
-  .constellation { width: min(86vw, 420px, 58vh); }
-}
-
-.cst-boite {
-  position: relative;
-  height: 0;
-  padding-top: 92.857%;          /* proportions du cœur : 112 × 104 */
-}
-
-.complete .cst-boite { animation: battementDoux var(--battement) ease-in-out infinite; }
-
-@keyframes battementDoux {
-  0% { transform: scale(1); }
-  12% { transform: scale(1.035); }
-  24% { transform: scale(.995); }
-  36% { transform: scale(1.02); }
-  52%, 100% { transform: scale(1); }
-}
-
-.cst-svg {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  overflow: visible;
-}
-
-.cst-fond { fill: url(#degrade-coeur); opacity: 0; transition: opacity 2.4s ease; }
-.trace .cst-fond { opacity: .2; }
-
-.cst-trace { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.cst-lueur { stroke: rgba(var(--principale-rgb), .5); stroke-width: 4.5; }
-.cst-trait { stroke: #fff6fa; stroke-width: 1.3; }
-
-.cst-medaillons {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-}
-
-.cst-medaillon {
-  position: absolute;
-  display: block;
-  width: 25%;
-  height: 0;
-  padding-top: 25%;
-  margin: -12.5% 0 0 -12.5%;
-  opacity: 0;
-  transform: scale(0);
-}
-
-.cst-medaillon.visible { opacity: 1; transform: none; animation: perle 1s var(--ressort) both; }
-
-@keyframes perle {
-  0% { opacity: 0; transform: scale(0) rotate(-30deg); }
-  55% { opacity: 1; }
-  100% { opacity: 1; transform: none; }
-}
-
-.cst-photo {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  border: 3px solid #fffaf3;
-  border-radius: 50%;
-  background-color: rgba(var(--claire-rgb), .35);
-  background-repeat: no-repeat;
-  box-shadow: 0 0 0 2px rgba(var(--principale-rgb), .55), 0 0 24px rgba(var(--principale-rgb), .85), 0 10px 24px rgba(0, 0, 0, .45);
-}
-
-.trace .cst-photo { animation: flotte 4.2s ease-in-out infinite; }
-
-@keyframes flotte {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  50% { transform: translate3d(0, -4px, 0); }
-}
-
-/* onde lumineuse quand la photo s'allume */
-.cst-medaillon::after {
-  content: '';
-  position: absolute;
-  top: -10%; left: -10%; right: -10%; bottom: -10%;
-  border: 2px solid rgba(var(--claire-rgb), .95);
-  border-radius: 50%;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.cst-medaillon.visible::after { animation: onde 1.2s ease-out .05s; }
-
-.cst-nom-ligne {
-  position: absolute;
-  left: -10%; right: -10%;
-  top: 39%;
-  margin: 0;
-  font-family: var(--script);
-  font-size: 2.6rem;
-  line-height: 1.3;
-  text-align: center;
-  white-space: nowrap;
-  transform: translate3d(0, -50%, 0);
-}
-
-.film-fin .bouton-lettre { margin-top: 6vh; }
-
-/* ---------- 6. L'enveloppe ------------------------------------------------- */
+/* ---------- 5. L'enveloppe ------------------------------------------------- */
 
 .env-cadre { transition: opacity .7s ease, transform .9s var(--doux); }
 .disparait .env-cadre { opacity: 0; transform: translate3d(0, 34px, 0) scale(.9); }
@@ -1095,7 +861,7 @@ button {
 .scene-enveloppe.est-active .env-indice { animation: apparition 1s ease 1.2s both, respiration 2.8s ease-in-out 2.2s infinite; }
 .ouverte .env-indice { visibility: hidden; }
 
-/* ---------- 7. La lettre --------------------------------------------------- */
+/* ---------- 6. La lettre --------------------------------------------------- */
 
 .lettre {
   position: fixed;
@@ -1310,6 +1076,7 @@ button {
   top: 0; left: 0;
   width: 100%; height: 100%;
   object-fit: cover;
+  object-position: 50% 20%;      /* photos en hauteur : le visage reste dans le cadre */
 }
 
 .polaroid-legende {
@@ -1321,9 +1088,6 @@ button {
   line-height: 1.1;
   color: #5a2340;
 }
-
-.polaroid-legende .coeur-inline,
-.visionneuse-figure figcaption .coeur-inline { width: .62em; height: .57em; vertical-align: -.04em; }
 
 @media (hover: hover) {
   .polaroid:hover .polaroid-cadre { box-shadow: 0 20px 44px rgba(0, 0, 0, .55); }
@@ -1573,11 +1337,6 @@ button {
   .enveloppe { width: 48vh; height: 32vh; }
   .env-texte { font-size: 1.3rem; font-size: 5.4vh; }
   .env-indice { margin-top: 3vh; }
-  .film-titre { font-size: 1.6rem; }
-  .film-legende { bottom: 34px; font-size: 1.9rem; }
-  .film-barres { bottom: 14px; }
-  .constellation { width: 56vh; margin-top: 2%; }
-  .film-fin .bouton-lettre { margin-top: 5vh; }
 }
 
 /* Très petits téléphones */
@@ -1597,9 +1356,6 @@ button {
 .leger .mot-anime,
 .leger .mot-doux { animation-name: apparition; }
 .leger .revele { filter: none; }
-.leger .film-titre.sort,
-.leger .film-legende.sort { filter: none; }
-.leger .cst-photo { box-shadow: 0 0 0 2px rgba(var(--principale-rgb), .55), 0 8px 18px rgba(0, 0, 0, .45); }
 .leger .prenom.ecrit { -webkit-filter: none; filter: none; text-shadow: none; }
 .leger .bouton-son,
 .leger .bouton-doux { -webkit-backdrop-filter: none; backdrop-filter: none; background-color: rgba(var(--fond-2-rgb), .7); }
@@ -1618,9 +1374,6 @@ button {
   .env-corps { animation: none; }
   .bouton-lettre::after { animation: none; }
   .revele { transform: none; filter: none; }
-  .complete .cst-boite, .trace .cst-photo, .prenom.ecrit { animation: none; }
-  .cst-medaillon.visible { animation-name: fondu; }
-  .cst-medaillon.visible::after { animation: none; }
 }
 
 @keyframes fondu {

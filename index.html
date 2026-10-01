@@ -38,7 +38,6 @@
   <script src="js/outils.js" defer></script>
   <script src="js/effets.js" defer></script>
   <script src="js/musique.js" defer></script>
-  <script src="js/film.js" defer></script>
   <script src="js/app.js" defer></script>
 </head>
 <body>
@@ -109,30 +108,7 @@
       <p class="indice-suite" id="indice-suite" aria-hidden="true"></p>
     </section>
 
-    <!-- 5. Le film des photos (si config.js en contient) -->
-    <section class="scene scene-film" id="scene-film">
-      <canvas class="film-toile" id="film-toile" aria-hidden="true"></canvas>
-      <div class="film-ombre" aria-hidden="true"></div>
-      <p class="film-titre" id="film-titre"></p>
-      <p class="film-legende" id="film-legende"></p>
-      <div class="film-barres" id="film-barres" aria-hidden="true"></div>
-      <div class="film-fin" id="film-fin">
-        <div class="constellation" id="constellation">
-          <div class="cst-boite">
-            <svg class="cst-svg" viewBox="-6 -6 112 104" aria-hidden="true" focusable="false">
-              <path class="cst-fond" d="M50 20C46 11 38 4 27 4C12 4 1 16 4 34C8 60 47 85 50 88C53 85 92 60 96 34C99 16 88 4 73 4C62 4 54 11 50 20Z"/>
-              <path class="cst-trace cst-lueur" d="M50 20C46 11 38 4 27 4C12 4 1 16 4 34C8 60 47 85 50 88C53 85 92 60 96 34C99 16 88 4 73 4C62 4 54 11 50 20Z"/>
-              <path class="cst-trace cst-trait" d="M50 20C46 11 38 4 27 4C12 4 1 16 4 34C8 60 47 85 50 88C53 85 92 60 96 34C99 16 88 4 73 4C62 4 54 11 50 20Z"/>
-            </svg>
-            <div class="cst-medaillons" id="cst-medaillons"></div>
-            <p class="cst-nom-ligne" id="cst-nom-ligne"><span class="prenom cst-nom" id="cst-nom"></span></p>
-          </div>
-        </div>
-        <button class="bouton-lettre" id="bouton-lettre-film" type="button" tabindex="-1"></button>
-      </div>
-    </section>
-
-    <!-- 6. L'enveloppe -->
+    <!-- 5. L'enveloppe -->
     <section class="scene scene-enveloppe" id="scene-enveloppe">
       <div class="env-cadre">
         <button class="enveloppe" id="enveloppe" type="button" aria-label="Ouvrir la lettre">
@@ -150,7 +126,7 @@
     </section>
   </main>
 
-  <!-- 7. La lettre -->
+  <!-- 6. La lettre -->
   <div class="lettre" id="lettre" role="dialog" aria-modal="true" aria-labelledby="lettre-titre" tabindex="-1" hidden>
     <article class="papier">
       <div class="papier-sceau" aria-hidden="true"><svg viewBox="0 0 100 92" focusable="false"><use xlink:href="#chemin-coeur" href="#chemin-coeur"/></svg></div>
