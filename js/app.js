@@ -1,12 +1,13 @@
 /*
  * Le scénario : accueil → explosion de cœurs → « JE T'AIME » → le prénom
- * écrit à la main → les petits messages → l'enveloppe → la lettre.
+ * écrit à la main → les petits messages → le film des photos → l'enveloppe
+ * → la lettre.
  */
 (function () {
   'use strict';
 
   var Amour = window.Amour;
-  var O = Amour.outils, E = Amour.effets, M = Amour.musique;
+  var O = Amour.outils, E = Amour.effets, M = Amour.musique, F = Amour.film;
   var html = document.documentElement;
 
   var charge = O.chargerConfig();
@@ -50,6 +51,17 @@
     zoneMessages: $('zone-messages'),
     boutonLettre: $('bouton-lettre'),
     indice: $('indice-suite'),
+    sceneFilm: $('scene-film'),
+    filmToile: $('film-toile'),
+    filmTitre: $('film-titre'),
+    filmLegende: $('film-legende'),
+    filmBarres: $('film-barres'),
+    filmFin: $('film-fin'),
+    constellation: $('constellation'),
+    cstMedaillons: $('cst-medaillons'),
+    cstNomLigne: $('cst-nom-ligne'),
+    cstNom: $('cst-nom'),
+    boutonFilm: $('bouton-lettre-film'),
     sceneEnveloppe: $('scene-enveloppe'),
     enveloppe: $('enveloppe'),
     envTexte: $('env-texte'),
@@ -277,6 +289,7 @@
   function surCoeur() {
     if (etat !== 'accueil') return;
     etat = 'histoire';
+    prechargerFilm();
     M.demarrer();               // pendant le geste : obligatoire pour le son
     vibrer([28, 90, 42]);
     var c = centre(el.grandCoeur);
@@ -335,6 +348,32 @@
     await attendre(650);
   }
 
+  // Écrit un texte « à la main » : l'encre (un masque) avance de gauche à
+  // droite, suivie d'une plume lumineuse. Renvoie une promesse.
+  function ecrireALaMain(noeud, j, duree, nbLettres) {
+    return new Promise(function (resoudre) {
+      noeud.classList.add('en-ecriture');
+      var r = noeud.getBoundingClientRect();
+      var debut = 0;
+
+      function etape(maintenant) {
+        if (!encore(j)) { E.plume(null); return resoudre(false); }
+        if (!debut) debut = maintenant;
+        var t = Math.min(1, (maintenant - debut) / duree);
+        var e = 0.5 - Math.cos(t * Math.PI) / 2;          // départ et arrivée en douceur
+        var f = -0.12 + e * 1.24;                          // bord de l'encre, de 0 à 1
+        var p = ((1.5 - f) * 50).toFixed(2) + '% 0';
+        noeud.style.webkitMaskPosition = p;
+        noeud.style.maskPosition = p;
+        E.plume(r.left + r.width * Math.max(0, Math.min(1, f)),
+                r.top + r.height * (0.56 + 0.15 * Math.sin(f * nbLettres * Math.PI)));
+        if (t < 1) window.requestAnimationFrame(etape);
+        else { E.plume(null); resoudre(true); }
+      }
+      window.requestAnimationFrame(etape);
+    });
+  }
+
   function ecrirePrenom(j) {
     return new Promise(function (resoudre) {
       el.scenePrenom.classList.remove('sort');
@@ -360,31 +399,13 @@
           return;
         }
 
-        el.prenom.classList.add('en-ecriture');
-        var r = el.prenom.getBoundingClientRect();
-        var debut = 0;
-
-        function etape(maintenant) {
-          if (!encore(j)) { E.plume(null); return resoudre(); }
-          if (!debut) debut = maintenant;
-          var t = Math.min(1, (maintenant - debut) / duree);
-          var e = 0.5 - Math.cos(t * Math.PI) / 2;          // départ et arrivée en douceur
-          var f = -0.12 + e * 1.24;                          // bord de l'encre, de 0 à 1
-          var p = ((1.5 - f) * 50).toFixed(2) + '% 0';
-          el.prenom.style.webkitMaskPosition = p;
-          el.prenom.style.maskPosition = p;
-          E.plume(r.left + r.width * Math.max(0, Math.min(1, f)),
-                  r.top + r.height * (0.56 + 0.15 * Math.sin(f * nbLettres * Math.PI)));
-          if (t < 1) window.requestAnimationFrame(etape);
-          else fin();
-        }
-        window.requestAnimationFrame(etape);
+        ecrireALaMain(el.prenom, j, duree, nbLettres).then(fin);
       }, 1000);
 
       function fin() {
         E.plume(null);
         if (!encore(j)) return resoudre();
-        el.prenom.classList.remove('en-ecriture');
+        el.prenom.classList.remove('en-ecriture', 'simple');
         el.prenom.classList.add('ecrit');
         el.prenomCoeur.classList.add('visible');
         var c = centre(el.prenomCoeur);
@@ -412,11 +433,23 @@
       await unMessage(j, liste[i], i === liste.length - 1);
       if (!encore(j)) return;
     }
-    await attendre(liste.length ? 1100 : 300);
-    if (!encore(j)) return;
+    if (filmPrevu()) {
+      await attendreOuToucher(liste.length ? 2600 : 300);
+      if (!encore(j)) return;
+      var vu = await film(j);
+      if (!encore(j)) return;
+      if (vu) return montrerBouton(el.boutonFilm);
+    } else {
+      await attendre(liste.length ? 1100 : 300);
+      if (!encore(j)) return;
+    }
+    montrerBouton(el.boutonLettre);
+  }
+
+  function montrerBouton(bouton) {
     etat = 'bouton';
-    el.boutonLettre.classList.add('visible');
-    el.boutonLettre.removeAttribute('tabindex');
+    bouton.classList.add('visible');
+    bouton.removeAttribute('tabindex');
   }
 
   async function unMessage(j, texte, dernier) {
@@ -457,16 +490,293 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* 5. L'enveloppe et la lettre                                         */
+  /* 5. Le film des photos                                               */
   /* ------------------------------------------------------------------ */
 
-  function surBoutonLettre() {
+  var filmOk = false;      // le canvas du film est prêt
+  var filmPhotos = null;   // préchargement : { photos, pret }
+
+  function filmPrevu() { return filmOk && config.options.diaporama && config.photos.liste.length > 0; }
+
+  // Les photos se téléchargent pendant l'accueil : elles sont prêtes à temps.
+  function prechargerFilm() {
+    if (filmPhotos || !filmPrevu()) return;
+    filmPhotos = F.precharger(config.photos.liste.slice(0, 10));
+  }
+
+  // Titre, puis chaque photo dans son cœur, puis la constellation.
+  // Renvoie false si aucune photo n'est prête : on passe directement à la suite.
+  async function film(j) {
+    prechargerFilm();
+    await Promise.race([filmPhotos.pret, attendre(5000)]);
+    if (!encore(j)) return false;
+    var photos = filmPhotos.photos.filter(function (p) { return p.ok; });
+    if (!photos.length) return false;
+
+    etat = 'film';
+    preparerFilm(photos);
+    montrer('scene-film');
+    await attendre(700);
+    if (!encore(j)) return false;
+
+    if (config.photos.titre) {
+      var n = remplirLettres(el.filmTitre, config.photos.titre, 'lettre-douce', 0, 45);
+      annoncer(config.photos.titre);
+      await attendreOuToucher(n * 45 + 2400);
+      if (!encore(j)) return false;
+      el.filmTitre.classList.add('sort');
+      await attendre(450);
+      if (!encore(j)) return false;
+    }
+
+    el.filmBarres.classList.add('visible');
+    for (var i = 0; i < photos.length; i++) {
+      await unePhoto(j, photos[i], i);
+      if (!encore(j)) return false;
+    }
+    await finDuFilm(j);
+    if (!encore(j)) return false;
+    await constellation(j);
+    return encore(j);
+  }
+
+  async function unePhoto(j, photo, i) {
+    el.sceneFilm.classList.remove('photo-pleine');
+    el.filmLegende.classList.add('sort');
+    await F.ouvrir(photo, {
+      apparition: function (x, y) {
+        if (!encore(j)) return;
+        E.petitEclat(x, y, 1.25);
+        M.effet('photo');
+        vibrer(12);
+      }
+    });
+    if (!encore(j)) return;
+    el.sceneFilm.classList.toggle('plein', F.pleinEcran());
+    el.sceneFilm.classList.add('photo-pleine');
+
+    vider(el.filmLegende);
+    if (photo.legende) {
+      remplirMots(el.filmLegende, photo.legende, 'mot-anime', 120, 150);
+      el.filmLegende.classList.remove('sort');
+      annoncer(photo.legende);
+    }
+    var duree = config.options.avancementAuto ? Math.max(3400, Math.min(6200, 3000 + photo.legende.length * 45)) : -1;
+    remplirBarre(i, duree);
+    await attendreOuToucher(duree);
+    remplirBarre(i, 0);
+  }
+
+  // La dernière photo se referme en cœur, bat une dernière fois et éclate.
+  async function finDuFilm(j) {
+    el.sceneFilm.classList.remove('photo-pleine');
+    el.filmLegende.classList.add('sort');
+    el.filmBarres.classList.remove('visible');
+    await F.fermer({
+      eclat: function (x, y) {
+        if (!encore(j)) return;
+        E.explosion(x, y, { force: 0.6, confettis: false });
+        flash(x, y);
+        M.effet('eclat');
+        vibrer([24, 70, 36]);
+      }
+    });
+    F.arreter();
+  }
+
+  // Les photos deviennent les perles d'un cœur de lumière tracé par la plume,
+  // puis son prénom s'écrit au creux du cœur.
+  async function constellation(j) {
+    el.filmFin.classList.add('visible');
+    ajusterNomConstellation();
+    await attendre(reduit ? 300 : 800);
+    if (!encore(j)) return;
+    await tracerConstellation(j);
+    if (!encore(j)) return;
+    el.constellation.classList.add('trace');
+    await attendre(600);
+    if (!encore(j)) return;
+
+    if (config.prenom) {
+      annoncer(config.prenom);
+      if (!masqueOk || reduit) {
+        el.cstNom.classList.add('simple');
+        await attendre(1300);
+      } else {
+        var nb = graphemes(config.prenom).length;
+        await ecrireALaMain(el.cstNom, j, Math.max(1400, Math.min(3000, 600 + nb * 170)), nb);
+      }
+      if (!encore(j)) return;
+      el.cstNom.classList.remove('en-ecriture', 'simple');
+      el.cstNom.classList.add('ecrit');
+      M.effet('prenom');
+    }
+    el.constellation.classList.add('complete');
+    var c = centre(el.constellation);
+    E.explosion(c.x, c.y, { force: 0.42, confettis: true });
+    E.pluieDeCoeurs(5, 7);
+    M.effet('final');
+    vibrer([20, 60, 30]);
+    await attendre(1500);
+  }
+
+  function preparerFilm(photos) {
+    el.sceneFilm.classList.remove('photo-pleine', 'plein');
+    el.filmTitre.classList.remove('sort');
+    vider(el.filmTitre);
+    vider(el.filmLegende);
+    el.filmLegende.classList.add('sort');
+    el.filmBarres.classList.remove('visible');
+    vider(el.filmBarres);
+    photos.forEach(function () {
+      var barre = document.createElement('span');
+      barre.className = 'film-barre';
+      barre.appendChild(document.createElement('i'));
+      el.filmBarres.appendChild(barre);
+    });
+    el.filmFin.classList.remove('visible');
+    el.constellation.classList.remove('trace', 'complete');
+    el.boutonFilm.classList.remove('visible');
+    preparerConstellation(photos);
+  }
+
+  // Barre de progression (comme les « statuts ») : se remplit pendant la photo.
+  function remplirBarre(i, duree) {
+    var barre = el.filmBarres.children[i];
+    if (!barre) return;
+    var trait = barre.firstChild;
+    trait.style.transition = 'none';
+    if (duree > 0) {
+      trait.style.transform = 'scaleX(0)';
+      void trait.offsetWidth;
+      trait.style.transition = 'transform ' + duree + 'ms linear';
+    }
+    trait.style.transform = 'scaleX(1)';
+  }
+
+  // Le visage au centre de chaque médaillon rond.
+  function cadrerMedaillon(noeud, p) {
+    var r = p.ih / p.iw;                       // hauteur / largeur
+    // Portrait : ~23 % de la hauteur (visage et épaules) ; paysage : plus large.
+    var part = Math.max(0.23, Math.min(0.6, 0.23 + (1.25 - r) * 0.6));
+    var z = Math.max(1, 1 / (part * r));
+    var px = Math.abs(1 - z) < 0.001 ? 0.5 : (0.5 - p.fx * z) / (1 - z);
+    var py = Math.abs(1 - z * r) < 0.001 ? 0.5 : (0.46 - p.fy * z * r) / (1 - z * r);
+    noeud.style.backgroundImage = 'url("' + p.image.replace(/["\\\n]/g, encodeURIComponent) + '")';
+    noeud.style.backgroundSize = (z * 100).toFixed(1) + '% auto';
+    noeud.style.backgroundPosition = (Math.max(0, Math.min(1, px)) * 100).toFixed(1) + '% ' +
+      (Math.max(0, Math.min(1, py)) * 100).toFixed(1) + '%';
+  }
+
+  var VB = { x: -6, y: -6, l: 112, h: 104 };   // viewBox du cœur de la constellation
+
+  function traitsConstellation() { return el.constellation.querySelectorAll('.cst-trace'); }
+
+  function preparerConstellation(photos) {
+    vider(el.cstMedaillons);
+    var traits = traitsConstellation(), ref = traits[0];
+    var longueur = ref.getTotalLength ? ref.getTotalLength() : 0;
+    for (var k = 0; k < traits.length; k++) {
+      traits[k].style.strokeDasharray = longueur + ' ' + longueur;
+      traits[k].style.strokeDashoffset = longueur;
+    }
+    var n = photos.length, taille = n <= 5 ? 25 : (n <= 7 ? 21 : 18);
+    photos.forEach(function (p, i) {
+      var seuil = longueur * placePerle(i, n);
+      var pt = longueur ? ref.getPointAtLength(seuil) : { x: 50, y: 50 };
+      var perle = document.createElement('span');
+      perle.className = 'cst-medaillon';
+      perle.style.left = ((pt.x - VB.x) / VB.l * 100).toFixed(3) + '%';
+      perle.style.top = ((pt.y - VB.y) / VB.h * 100).toFixed(3) + '%';
+      perle.style.width = perle.style.paddingTop = taille + '%';
+      perle.style.marginLeft = perle.style.marginTop = (-taille / 2) + '%';
+      perle.seuil = seuil;
+      var photo = document.createElement('span');
+      photo.className = 'cst-photo';
+      photo.style.animationDelay = (-i * 0.9) + 's';
+      cadrerMedaillon(photo, p);
+      perle.appendChild(photo);
+      el.cstMedaillons.appendChild(perle);
+    });
+    el.cstNom.textContent = config.prenom;
+    el.cstNom.classList.remove('en-ecriture', 'ecrit', 'simple');
+    el.cstNom.style.webkitMaskPosition = '';
+    el.cstNom.style.maskPosition = '';
+    el.cstNomLigne.hidden = !config.prenom;
+  }
+
+  // Place de la i-ième photo sur le contour (0 = creux du haut, 0,5 = pointe).
+  // Jusqu'à 5 photos, les côtés restent libres pour le prénom.
+  function placePerle(i, n) {
+    if (n < 2) return 0.5;
+    var v = 2 * i / (n - 1) - 1, k = n <= 5 ? 1.4 : 1;
+    return 0.5 + (v < 0 ? -1 : 1) * 0.4 * Math.pow(Math.abs(v), k);
+  }
+
+  // La plume trace le cœur ; chaque photo s'allume quand elle passe.
+  function tracerConstellation(j) {
+    return new Promise(function (resoudre) {
+      var traits = traitsConstellation(), ref = traits[0];
+      var longueur = ref.getTotalLength ? ref.getTotalLength() : 0;
+      var perles = [].slice.call(el.cstMedaillons.children);
+      var k;
+      if (reduit || !longueur) {
+        for (k = 0; k < traits.length; k++) traits[k].style.strokeDashoffset = '0';
+        perles.forEach(function (perle) { perle.classList.add('visible'); });
+        return setTimeout(resoudre, 900);
+      }
+      var svg = ref.ownerSVGElement, duree = 3000 + perles.length * 100, debut = 0, prochaine = 0;
+
+      function etape(maintenant) {
+        if (!encore(j)) { E.plume(null); return resoudre(); }
+        if (!debut) debut = maintenant;
+        var t = Math.min(1, (maintenant - debut) / duree);
+        var s = (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2) * longueur;
+        for (k = 0; k < traits.length; k++) traits[k].style.strokeDashoffset = (longueur - s).toFixed(2);
+        var r = svg.getBoundingClientRect(), e = r.width / VB.l, pt = ref.getPointAtLength(s);
+        E.plume(r.left + (pt.x - VB.x) * e, r.top + (pt.y - VB.y) * e);
+        while (prochaine < perles.length && perles[prochaine].seuil <= s) {
+          allumerPerle(perles[prochaine], prochaine);
+          prochaine++;
+        }
+        if (t < 1) window.requestAnimationFrame(etape);
+        else { E.plume(null); resoudre(); }
+      }
+      window.requestAnimationFrame(etape);
+    });
+  }
+
+  function allumerPerle(perle, i) {
+    perle.classList.add('visible');
+    var c = centre(perle);
+    E.etincelles(c.x, c.y, 16);
+    M.effet('perle', i);
+  }
+
+  // Le prénom tient au creux du cœur, entre les photos.
+  function ajusterNomConstellation() {
+    if (!config.prenom) return;
+    var largeur = el.constellation.getBoundingClientRect().width;
+    if (!largeur) return;
+    var taille = largeur * 0.13;
+    el.cstNomLigne.style.fontSize = taille + 'px';
+    var mesure = el.cstNom.getBoundingClientRect().width, dispo = largeur * 0.62;
+    if (mesure > dispo) el.cstNomLigne.style.fontSize = Math.max(14, Math.floor(taille * dispo / mesure)) + 'px';
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* 6. L'enveloppe et la lettre                                         */
+  /* ------------------------------------------------------------------ */
+
+  function surBoutonLettre(e) {
     if (etat !== 'bouton') return;
     etat = 'enveloppe';
-    var c = centre(el.boutonLettre);
+    var bouton = e && e.currentTarget && e.currentTarget.nodeName === 'BUTTON' ? e.currentTarget : el.boutonLettre;
+    var c = centre(bouton);
     E.etincelles(c.x, c.y, 26);
     M.effet('pop');
     el.boutonLettre.setAttribute('tabindex', '-1');
+    el.boutonFilm.setAttribute('tabindex', '-1');
     el.sceneEnveloppe.classList.remove('ouverte', 'disparait');
     montrer('scene-enveloppe');
     setTimeout(function () { try { el.enveloppe.focus({ preventScroll: true }); } catch (e) { /* rien */ } }, 900);
@@ -539,12 +849,16 @@
         var restantes = photos.filter(function (ph) { return !ph.erreur; }).length;
         if (!restantes) el.souvenirs.hidden = true;
       };
+      if (photo.cadrage && F) {
+        var point = F.lireCadrage(photo.cadrage);
+        img.style.objectPosition = (point[0] * 100) + '% ' + (point[1] * 100) + '%';
+      }
       img.src = photo.image;
       fenetre.appendChild(img);
       cadre.appendChild(fenetre);
       var legende = document.createElement('span');
       legende.className = 'polaroid-legende';
-      legende.textContent = photo.legende || '';
+      remplirTexte(legende, photo.legende || '');
       cadre.appendChild(legende);
       bouton.appendChild(cadre);
       bouton.addEventListener('click', function () { ouvrirVisionneuse(i); });
@@ -647,7 +961,7 @@
     var photo = photos[photoActive];
     el.visionneuseImg.src = photo.image;
     el.visionneuseImg.alt = photo.legende || '';
-    el.visionneuseLegende.textContent = photo.legende || '';
+    remplirTexte(el.visionneuseLegende, photo.legende || '');
     el.visionneuse.classList.toggle('une-seule', visibles < 2);
   }
 
@@ -676,6 +990,7 @@
     toucherEnAttente = null;
     E.vider();
     E.plume(null);
+    if (filmOk) F.arreter();
     fermerVisionneuse();
     el.lettre.classList.remove('ouverte');
     setTimeout(function () { if (etat !== 'lettre') el.lettre.hidden = true; }, 900);
@@ -692,6 +1007,12 @@
     el.sceneMessages.classList.remove('attend-toucher');
     el.boutonLettre.classList.remove('visible');
     el.boutonLettre.setAttribute('tabindex', '-1');
+    el.sceneFilm.classList.remove('photo-pleine', 'plein');
+    el.filmFin.classList.remove('visible');
+    el.filmBarres.classList.remove('visible');
+    el.constellation.classList.remove('trace', 'complete');
+    el.boutonFilm.classList.remove('visible');
+    el.boutonFilm.setAttribute('tabindex', '-1');
     vider(el.zoneMessages);
     void html.offsetWidth;
     lancerAccueil();
@@ -765,6 +1086,7 @@
 
   el.grandCoeur.addEventListener('click', surCoeur);
   el.boutonLettre.addEventListener('click', surBoutonLettre);
+  el.boutonFilm.addEventListener('click', surBoutonLettre);
   el.enveloppe.addEventListener('click', surEnveloppe);
   el.boutonRejouer.addEventListener('click', rejouer);
   $('visionneuse-fermer').addEventListener('click', fermerVisionneuse);
@@ -837,14 +1159,26 @@
   el.indice.textContent = tactile ? 'Touche l’écran pour continuer' : 'Clique pour continuer';
   el.envIndice.textContent = tactile ? 'Touche l’enveloppe pour l’ouvrir' : 'Clique sur l’enveloppe pour l’ouvrir';
   remplirTexte(el.boutonLettre, config.boutonLettre);
+  remplirTexte(el.boutonFilm, config.boutonLettre);
   remplirTexte(el.envTexte, config.lettre.surEnveloppe);
 
   E.initialiser({
     theme: theme,
     leger: html.classList.contains('leger'),
     reduit: reduit,
-    surLeger: function () { html.classList.add('leger'); }
+    surLeger: function () {
+      html.classList.add('leger');
+      if (filmOk) F.alleger();
+    }
   });
+
+  filmOk = !!(F && F.initialiser({
+    toile: el.filmToile,
+    theme: theme,
+    leger: html.classList.contains('leger'),
+    reduit: reduit,
+    effets: E
+  }));
 
   if (charge.erreur) signalerErreurConfig();
 
@@ -854,8 +1188,12 @@
     redim = setTimeout(function () {
       if (el.sceneJetaime.classList.contains('est-active')) ajusterLargeur(el.jetaime);
       if (el.scenePrenom.classList.contains('est-active')) ajusterLargeur(el.lignePrenom);
+      if (el.sceneFilm.classList.contains('est-active')) ajusterNomConstellation();
     }, 150);
   });
 
-  attendrePolices().then(lancerAccueil);
+  attendrePolices().then(function () {
+    lancerAccueil();
+    setTimeout(prechargerFilm, 1500);
+  });
 })();

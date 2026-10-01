@@ -126,3 +126,32 @@ test('les textes trop longs sont tronqués', () => {
   const c = O.normaliser({ prenom: 'x'.repeat(5000) }, O.DEFAUTS);
   assert.equal(c.prenom.length, 2000);
 });
+
+test('photos : cadrage facultatif (le visage au centre), sinon ignoré', () => {
+  const c = O.normaliser({
+    photos: [
+      { image: 'medias/a.jpg', cadrage: '44% 16%' },
+      { image: 'medias/b.jpg', cadrage: '50 30' },
+      { image: 'medias/c.jpg', cadrage: '12,5% 80%' },
+      { image: 'medias/d.jpg', cadrage: 'en haut' },
+      { image: 'medias/e.jpg', cadrage: '50%; background:red' },
+    ],
+  }, O.DEFAUTS);
+  assert.deepEqual(c.photos.liste.map((p) => p.cadrage), ['44% 16%', '50 30', '12,5% 80%', undefined, undefined]);
+  assert.equal('cadrage' in c.photos.liste[3], false);
+});
+
+test('le film des photos est activé par défaut et peut être coupé', () => {
+  assert.equal(O.normaliser(undefined, O.DEFAUTS).options.diaporama, true);
+  assert.equal(O.normaliser({ options: { diaporama: false } }, O.DEFAUTS).options.diaporama, false);
+  assert.equal(O.normaliser({ options: { diaporama: 'non' } }, O.DEFAUTS).options.diaporama, true);
+});
+
+test('film : lecture du cadrage (fractions de 0 à 1), défaut en haut du centre', () => {
+  require('../js/film.js');
+  const F = window.Amour.film;
+  assert.deepEqual(F.lireCadrage('44% 16%'), [0.44, 0.16]);
+  assert.deepEqual(F.lireCadrage('12,5 80'), [0.125, 0.8]);
+  assert.deepEqual(F.lireCadrage('150% -3%'), [0.5, 0.36]);
+  assert.deepEqual(F.lireCadrage(undefined), [0.5, 0.36]);
+});

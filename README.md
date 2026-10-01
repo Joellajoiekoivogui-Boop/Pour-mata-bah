@@ -22,13 +22,22 @@ gratuitement en une minute.
 5. **Les petits messages** apparaissent un à un, mot par mot. Ils défilent
    seuls ; un toucher accélère. Le dernier, *« Je t’aime ❤️ »*, est mis en
    valeur.
-6. **« Découvrir mon message 💌 »** fait arriver une enveloppe scellée d’un
+6. **Le film des photos** (s’il y a des photos) : un titre, puis chaque
+   photo naît dans un médaillon en forme de cœur, son visage au creux du
+   cœur ; le cœur bat, des petits cœurs jaillissent, puis il s’ouvre jusqu’à
+   remplir l’écran pendant que la caméra recule. La photo vit ensuite (lent
+   zoom vers le visage, lumière chaude, poussières dorées) avec sa légende
+   écrite à la main ; des barres, comme les statuts, montrent l’avancée. À la
+   fin, la dernière photo se referme en cœur, bat une dernière fois et
+   éclate : une plume de lumière trace alors un grand cœur dont les photos
+   deviennent les perles, et son prénom s’écrit au milieu.
+7. **« Découvrir mon message 💌 »** fait arriver une enveloppe scellée d’un
    cachet en cœur. On la touche : le sceau saute, le rabat s’ouvre, la lettre
    sort et se déplie. Le texte se révèle au rythme de la lecture, la
    signature s’écrit à la main, un cœur se dessine, puis une pluie de cœurs
    tombe.
-7. **Les photos** (facultatives) s’affichent en polaroïds, agrandissables
-   d’un toucher. *« Revivre ce moment »* relance l’histoire.
+8. **Les photos** s’affichent aussi en polaroïds sous la lettre,
+   agrandissables d’un toucher. *« Revivre ce moment »* relance l’histoire.
 
 ## Personnaliser
 
@@ -62,10 +71,10 @@ entre les guillemets, enregistre, recharge la page.
 | `messages` | Les petits messages, dans l’ordre — autant que tu veux |
 | `boutonLettre` | Le texte du bouton (« Découvrir mon message 💌 ») |
 | `lettre` | La déclaration finale : texte sur l’enveloppe, paragraphes, formule, signature |
-| `photos` | Le titre de la galerie et la liste des photos avec leurs légendes |
+| `photos` | Le titre du film et de la galerie, la liste des photos avec leurs légendes et leur cadrage |
 | `couleur` | Le thème : un nom ou n’importe quelle couleur `#rrggbb` |
 | `musique` | Boîte à musique intégrée, ta chanson, ou aucun son |
-| `options` | Défilement automatique, vibration, liens de l’atelier |
+| `options` | Défilement automatique, vibration, liens de l’atelier, film des photos |
 
 Si `config.js` contient une faute de frappe (guillemet ou virgule oubliés),
 la page l’indique en bas de l’écran au lieu de rester muette.
@@ -90,17 +99,29 @@ Dépose tes photos dans le dossier [`medias/`](medias/) puis ajoute-les :
 
 ```js
 photos: {
-  titre: "Quelques instants précieux",
+  titre: "Regarde comme tu es belle…",
   liste: [
-    { image: "medias/photo-1.jpg", legende: "Ce jour-là…" },
+    { image: "medias/photo-1.jpg", legende: "Même le soleil t’admire…", cadrage: "44% 16%" },
     { image: "medias/photo-2.jpg", legende: "Ton sourire" },
   ],
 },
 ```
 
+- Le **titre** ouvre le film des photos et coiffe la galerie sous la lettre.
+- **`cadrage`** (facultatif) : le point de la photo à garder au centre, en
+  général le visage. `"44% 16%"` = un peu à gauche du milieu, tout en haut.
+  Il guide le médaillon en cœur, le zoom lent, les perles du grand cœur et
+  les polaroïds. Sans cadrage, le haut du centre est utilisé.
+- Jusqu’à 10 photos passent dans le film (5 est idéal : environ 45 s avec la
+  musique) ; un toucher passe à la suivante. `options.diaporama: false`
+  garde seulement la galerie sous la lettre.
+- Sur un écran large (ordinateur, téléphone à l’horizontale), la photo est
+  présentée dans un cadre lumineux au lieu d’être trop recadrée.
+
 Une adresse web (`https://…`) fonctionne aussi. Conseil : réduis les photos à
-environ 1200 pixels de large pour qu’elles s’affichent vite sur téléphone.
-Une photo introuvable est simplement masquée.
+environ 1200 pixels de large pour qu’elles s’affichent vite sur téléphone ;
+elles se téléchargent pendant l’écran d’accueil. Une photo introuvable est
+simplement ignorée.
 
 ### La musique
 
@@ -165,6 +186,7 @@ tester les liens de l’atelier, sers le dossier : `npx serve .` ou
   js/outils.js         thèmes, lecture de la configuration, liens
   js/effets.js         ciel, cœurs, explosion, confettis, plume (canvas)
   js/musique.js        boîte à musique (Web Audio) ou ta chanson, petits sons
+  js/film.js           le film des photos : médaillons en cœur, zoom, lumières (canvas)
   js/app.js            le scénario, scène par scène
   js/editeur.js        l’atelier
   tests/               tests de la configuration (node --test tests/*.test.js)

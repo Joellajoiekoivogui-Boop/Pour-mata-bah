@@ -172,7 +172,7 @@
     photos: { titre: 'Quelques instants précieux', liste: [] },
     couleur: 'rose',
     musique: { activee: true, fichier: '', volume: 0.7, debut: 0 },
-    options: { avancementAuto: true, vibration: true, personnalisationParLien: true }
+    options: { avancementAuto: true, vibration: true, personnalisationParLien: true, diaporama: true }
   };
 
   var LIMITE_TEXTE = 2000;
@@ -207,6 +207,8 @@
     return u;
   }
 
+  var RE_CADRAGE = /^\d{1,3}(?:[.,]\d+)?\s*%?\s+\d{1,3}(?:[.,]\d+)?\s*%?$/;
+
   function normaliserPhotos(v, base) {
     var res = { titre: base.titre, liste: base.liste.slice() };
     if (Array.isArray(v)) v = { liste: v };
@@ -217,7 +219,12 @@
         if (typeof p === 'string') p = { image: p };
         if (!estObjet(p)) return null;
         var image = urlSure(p.image || p.src || p.url);
-        return image ? { image: image, legende: texte(p.legende || p.texte, '') } : null;
+        if (!image) return null;
+        var photo = { image: image, legende: texte(p.legende || p.texte, '') };
+        // Cadrage facultatif : le point à garder au centre (le visage), « 45% 20% ».
+        var cadrage = texte(p.cadrage, '');
+        if (RE_CADRAGE.test(cadrage)) photo.cadrage = cadrage;
+        return photo;
       }).filter(Boolean).slice(0, 30);
     }
     return res;

@@ -64,12 +64,20 @@ window.DECLARATION = {
   /* 6. LES PHOTOS (facultatif)
         Dépose tes photos dans le dossier « medias » puis ajoute une ligne
         par photo. Une adresse web (https://…) fonctionne aussi.
+        Elles forment un petit film : chaque photo naît dans un cœur qui
+        bat puis s'ouvre en plein écran, et à la fin elles deviennent les
+        perles d'un grand cœur de lumière. On les retrouve sous la lettre.
+        cadrage (facultatif) = le point de la photo à garder au centre,
+        en général le visage : "50% 20%" = au milieu, en haut de la photo.
         Laisse la liste vide pour ne pas afficher de photos.                   */
   photos: {
-    titre: "Quelques instants précieux",
+    titre: "Regarde comme tu es belle…",
     liste: [
-      // { image: "medias/photo-1.jpg", legende: "Ce jour-là…" },
-      // { image: "medias/photo-2.jpg", legende: "Ton sourire" },
+      { image: "medias/photo-1.jpg", legende: "Même le soleil t’admire…", cadrage: "44% 16%" },
+      { image: "medias/photo-2.jpg", legende: "Fière, forte… et si belle", cadrage: "53% 23%" },
+      { image: "medias/photo-3.jpg", legende: "À quoi penses-tu ? Moi, c’est à toi…", cadrage: "49% 18%" },
+      { image: "medias/photo-4.jpg", legende: "Élégante, en toutes circonstances", cadrage: "47% 24%" },
+      { image: "medias/photo-5.jpg", legende: "Et ce sourire… mon endroit préféré au monde ❤️", cadrage: "47% 21%" },
     ],
   },
 
@@ -95,5 +103,6 @@ window.DECLARATION = {
     avancementAuto: true,       // les messages défilent seuls (un toucher accélère)
     vibration: true,            // petit battement de cœur sur les téléphones Android
     personnalisationParLien: true, // autorise les liens créés avec personnaliser.html
+    diaporama: true,            // le film animé des photos (false = photos seulement sous la lettre)
   },
 };
